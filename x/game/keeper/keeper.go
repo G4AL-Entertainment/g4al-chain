@@ -33,7 +33,8 @@ func NewKeeper(
 	channelKeeper cosmosibckeeper.ChannelKeeper,
 	portKeeper cosmosibckeeper.PortKeeper,
 	scopedKeeper cosmosibckeeper.ScopedKeeper,
-	accountKeeper types.AccountKeeper, permissionKeeper types.PermissionKeeper,
+	accountKeeper types.AccountKeeper,
+	permissionKeeper types.PermissionKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {

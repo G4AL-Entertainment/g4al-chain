@@ -1,9 +1,11 @@
 package keeper
 
 import (
+	"github.com/golang/mock/gomock"
 	"testing"
 
 	"github.com/G4AL-Entertainment/g4al-chain/x/assetfactory/keeper"
+	testUtil "github.com/G4AL-Entertainment/g4al-chain/x/assetfactory/testutil"
 	"github.com/G4AL-Entertainment/g4al-chain/x/assetfactory/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -46,6 +48,7 @@ func (assetfactoryPortKeeper) BindPort(ctx sdk.Context, portID string) *capabili
 }
 
 func AssetfactoryKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
+	ctrl := gomock.NewController(t)
 	logger := log.NewNopLogger()
 
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
@@ -75,10 +78,10 @@ func AssetfactoryKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		assetfactoryChannelKeeper{},
 		assetfactoryPortKeeper{},
 		capabilityKeeper.ScopeToModule("AssetfactoryScopedKeeper"),
-		nil,
-		nil,
-		nil,
-		nil,
+		testUtil.NewMockAccountKeeper(ctrl),
+		testUtil.NewMockPermissionKeeper(ctrl),
+		testUtil.NewMockGameKeeper(ctrl),
+		testUtil.NewMockNftKeeper(ctrl),
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, logger)

@@ -4,6 +4,7 @@ import (
 	"context"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/nft"
+	"strconv"
 
 	"github.com/G4AL-Entertainment/g4al-chain/x/assetfactory/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -31,7 +32,7 @@ func (k msgServer) MintNft(goCtx context.Context, msg *types.MsgMintNft) (*types
 
 	toMint := nft.NFT{
 		ClassId: msg.Symbol,
-		Id:      string(k.nftKeeper.GetTotalSupply(ctx, msg.Symbol)), // check conversion
+		Id:      strconv.FormatUint(k.nftKeeper.GetTotalSupply(ctx, msg.Symbol), 10), // check conversion
 		Uri:     msg.Uri,
 		UriHash: msg.UriHash,
 		//Data:    msgData,

@@ -42,7 +42,7 @@ type NftKeeper interface {
 	GetTotalSupply(ctx sdk.Context, classId string) uint64
 	// Methods imported from nft should be defined here
 
-	nft.QueryServer
+	//nft.QueryServer
 }
 
 // AccountKeeper defines the expected account keeper used for simulations (noalias)
