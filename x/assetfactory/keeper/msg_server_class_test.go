@@ -37,7 +37,8 @@ func TestClassMsgServerCreate(t *testing.T) {
 }
 
 func TestClassMsgServerUpdate(t *testing.T) {
-	creator := "A"
+	creator := "Alice"
+	gameSymbol := "elr"
 
 	for _, tc := range []struct {
 		desc    string
@@ -46,14 +47,15 @@ func TestClassMsgServerUpdate(t *testing.T) {
 	}{
 		{
 			desc: "Completed",
-			request: &types.MsgUpdateClass{Creator: creator,
-				Symbol: strconv.Itoa(0),
+			request: &types.MsgUpdateClass{
+				Creator: creator,
+				Symbol:  gameSymbol,
 			},
 		},
 		{
 			desc: "Unauthorized",
 			request: &types.MsgUpdateClass{Creator: "B",
-				Symbol: strconv.Itoa(0),
+				Symbol: gameSymbol,
 			},
 			err: sdkerrors.ErrUnauthorized,
 		},
@@ -69,8 +71,18 @@ func TestClassMsgServerUpdate(t *testing.T) {
 			k, ctx := keepertest.AssetfactoryKeeper(t)
 			srv := keeper.NewMsgServerImpl(*k)
 			wctx := sdk.WrapSDKContext(ctx)
-			expected := &types.MsgCreateClass{Creator: creator,
-				Symbol: strconv.Itoa(0),
+
+			expected := &types.MsgCreateClass{
+				Creator:            creator,
+				Symbol:             gameSymbol,
+				Project:            gameSymbol,
+				MaxSupply:          0,
+				CanChangeMaxSupply: false,
+				Name:               "ERaiders skins",
+				Description:        "Skins for ERaiders",
+				Uri:                "",
+				UriHash:            "",
+				Data:               "",
 			}
 			_, err := srv.CreateClass(wctx, expected)
 			require.NoError(t, err)

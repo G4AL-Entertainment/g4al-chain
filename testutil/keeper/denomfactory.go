@@ -122,7 +122,7 @@ func DenomfactoryKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		accK,
 		permK,
 		gameK,
-		banK,
+		nil,
 	)
 
 	// Initialize params
