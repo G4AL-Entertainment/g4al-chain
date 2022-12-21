@@ -19,11 +19,12 @@ var _ = strconv.IntSize
 func TestClassMsgServerCreate(t *testing.T) {
 	k, ctx := keepertest.AssetfactoryKeeper(t)
 	srv := keeper.NewMsgServerImpl(*k)
-	wctx := sdk.WrapSDKContext(ctx)
+	wctx := sdk.UnwrapSDKContext(ctx)
 	creator := "A"
 	for i := 0; i < 5; i++ {
-		expected := &types.MsgCreateClass{Creator: creator,
-			Symbol: strconv.Itoa(i),
+		expected := &types.MsgCreateClass{
+			Creator: creator,
+			Symbol:  strconv.Itoa((1 + i) * 100),
 		}
 		_, err := srv.CreateClass(wctx, expected)
 		require.NoError(t, err)

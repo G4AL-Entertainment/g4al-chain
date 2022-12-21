@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	testUtil "github.com/G4AL-Entertainment/g4al-chain/x/permission/testutil"
+	"github.com/golang/mock/gomock"
 	"testing"
 
 	"github.com/G4AL-Entertainment/g4al-chain/x/permission/keeper"
@@ -36,15 +38,22 @@ func PermissionKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		memStoreKey,
 		"PermissionParams",
 	)
+	
+	ctrl := gomock.NewController(t)
+	accK := testUtil.NewMockAccountKeeper(ctrl)
+
+	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())
+
+	// Account expected
+	accK.EXPECT().GetAccount(ctx, gomock.Any()).AnyTimes()
+
 	k := keeper.NewKeeper(
 		cdc,
 		storeKey,
 		memStoreKey,
 		paramsSubspace,
-		nil,
+		accK,
 	)
-
-	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())
 
 	// Initialize params
 	k.SetParams(ctx, types.DefaultParams())

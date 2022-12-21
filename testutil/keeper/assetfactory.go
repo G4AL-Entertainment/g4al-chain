@@ -48,7 +48,6 @@ func (assetfactoryPortKeeper) BindPort(ctx sdk.Context, portID string) *capabili
 }
 
 func AssetfactoryKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
-	ctrl := gomock.NewController(t)
 	logger := log.NewNopLogger()
 
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
@@ -70,6 +69,42 @@ func AssetfactoryKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		memStoreKey,
 		"AssetfactoryParams",
 	)
+	ctrl := gomock.NewController(t)
+	accK := testUtil.NewMockAccountKeeper(ctrl)
+	permK := testUtil.NewMockPermissionKeeper(ctrl)
+	gameK := testUtil.NewMockGameKeeper(ctrl)
+	nftK := testUtil.NewMockNftKeeper(ctrl)
+
+	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, logger)
+
+	// Account expected
+	accK.EXPECT().GetAccount(ctx, gomock.Any()).AnyTimes()
+
+	// Permission expected
+	permK.EXPECT().ValidateDeveloper(ctx, gomock.Any()).AnyTimes()
+	permK.EXPECT().GetDeveloper(ctx, gomock.Any()).AnyTimes()
+
+	// Game expected
+	gameK.EXPECT().GetProject(ctx, gomock.Any()).AnyTimes()
+	gameK.EXPECT().ValidateProjectOwnershipOrDelegateByProject(ctx, gomock.Any(), gomock.Any()).AnyTimes()
+
+	// Nft expected
+	nftK.EXPECT().Mint(ctx, gomock.Any(), gomock.Any()).AnyTimes()
+	nftK.EXPECT().Burn(ctx, gomock.Any(), gomock.Any()).AnyTimes()
+	nftK.EXPECT().Transfer(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	nftK.EXPECT().SaveClass(ctx, gomock.Any()).AnyTimes()
+	nftK.EXPECT().UpdateClass(ctx, gomock.Any()).AnyTimes()
+	nftK.EXPECT().Update(ctx, gomock.Any()).AnyTimes()
+	// Getters
+	nftK.EXPECT().GetNFT(ctx, gomock.Any(), gomock.Any()).AnyTimes()
+	nftK.EXPECT().GetClass(ctx, gomock.Any()).AnyTimes()
+	nftK.EXPECT().GetClasses(ctx).AnyTimes()
+	nftK.EXPECT().GetBalance(ctx, gomock.Any(), gomock.Any()).AnyTimes()
+	nftK.EXPECT().GetNFTsOfClass(ctx, gomock.Any()).AnyTimes().AnyTimes()
+	nftK.EXPECT().GetNFTsOfClassByOwner(ctx, gomock.Any(), gomock.Any()).AnyTimes()
+	nftK.EXPECT().GetOwner(ctx, gomock.Any(), gomock.Any()).AnyTimes()
+	nftK.EXPECT().GetTotalSupply(ctx, gomock.Any()).AnyTimes()
+
 	k := keeper.NewKeeper(
 		appCodec,
 		storeKey,
@@ -78,13 +113,11 @@ func AssetfactoryKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		assetfactoryChannelKeeper{},
 		assetfactoryPortKeeper{},
 		capabilityKeeper.ScopeToModule("AssetfactoryScopedKeeper"),
-		testUtil.NewMockAccountKeeper(ctrl),
-		testUtil.NewMockPermissionKeeper(ctrl),
-		testUtil.NewMockGameKeeper(ctrl),
-		testUtil.NewMockNftKeeper(ctrl),
+		accK,
+		permK,
+		gameK,
+		nftK,
 	)
-
-	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, logger)
 
 	// Initialize params
 	k.SetParams(ctx, types.DefaultParams())

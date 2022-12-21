@@ -1,9 +1,11 @@
 package keeper
 
 import (
+	"github.com/golang/mock/gomock"
 	"testing"
 
 	"github.com/G4AL-Entertainment/g4al-chain/x/denomfactory/keeper"
+	testUtil "github.com/G4AL-Entertainment/g4al-chain/x/denomfactory/testutil"
 	"github.com/G4AL-Entertainment/g4al-chain/x/denomfactory/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -67,6 +69,48 @@ func DenomfactoryKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		memStoreKey,
 		"DenomfactoryParams",
 	)
+
+	ctrl := gomock.NewController(t)
+	accK := testUtil.NewMockAccountKeeper(ctrl)
+	permK := testUtil.NewMockPermissionKeeper(ctrl)
+	gameK := testUtil.NewMockGameKeeper(ctrl)
+	banK := testUtil.NewMockBankKeeper(ctrl)
+
+	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, logger)
+
+	// Account expected
+	accK.EXPECT().GetAccount(ctx, gomock.Any()).AnyTimes()
+
+	// Permission expected
+	permK.EXPECT().ValidateDeveloper(ctx, gomock.Any()).AnyTimes()
+	permK.EXPECT().GetDeveloper(ctx, gomock.Any()).AnyTimes()
+
+	// Game expected
+	gameK.EXPECT().GetProject(ctx, gomock.Any()).AnyTimes()
+	gameK.EXPECT().ValidateProjectOwnershipOrDelegateByProject(ctx, gomock.Any(), gomock.Any()).AnyTimes()
+
+	// Bank expected
+	banK.EXPECT().BurnCoins(ctx, gomock.Any(), gomock.Any()).AnyTimes()
+	banK.EXPECT().DelegateCoins(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	banK.EXPECT().DelegateCoinsFromAccountToModule(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	banK.EXPECT().ExportGenesis(gomock.Any()).AnyTimes()
+	banK.EXPECT().GetDenomMetaData(ctx, gomock.Any()).AnyTimes()
+	banK.EXPECT().GetPaginatedTotalSupply(ctx, gomock.Any()).AnyTimes()
+	banK.EXPECT().GetSupply(ctx, gomock.Any()).AnyTimes()
+	banK.EXPECT().HasDenomMetaData(ctx, gomock.Any()).AnyTimes()
+	banK.EXPECT().HasSupply(ctx, gomock.Any()).AnyTimes()
+	banK.EXPECT().InitGenesis(gomock.Any(), gomock.Any()).AnyTimes()
+	banK.EXPECT().IterateAllDenomMetaData(ctx, gomock.Any()).AnyTimes()
+	banK.EXPECT().IterateTotalSupply(ctx, gomock.Any()).AnyTimes()
+	banK.EXPECT().MintCoins(ctx, gomock.Any(), gomock.Any()).AnyTimes()
+	banK.EXPECT().SendCoinsFromAccountToModule(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	banK.EXPECT().SendCoinsFromModuleToAccount(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	banK.EXPECT().SendCoinsFromModuleToModule(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	banK.EXPECT().SetDenomMetaData(ctx, gomock.Any()).AnyTimes()
+	banK.EXPECT().UndelegateCoins(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	banK.EXPECT().UndelegateCoinsFromModuleToAccount(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	banK.EXPECT().WithMintCoinsRestriction(gomock.Any()).AnyTimes()
+
 	k := keeper.NewKeeper(
 		appCodec,
 		storeKey,
@@ -75,13 +119,11 @@ func DenomfactoryKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		denomfactoryChannelKeeper{},
 		denomfactoryPortKeeper{},
 		capabilityKeeper.ScopeToModule("DenomfactoryScopedKeeper"),
-		nil,
-		nil,
-		nil,
-		nil,
+		accK,
+		permK,
+		gameK,
+		banK,
 	)
-
-	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, logger)
 
 	// Initialize params
 	k.SetParams(ctx, types.DefaultParams())

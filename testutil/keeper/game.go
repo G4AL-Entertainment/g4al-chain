@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	testUtil "github.com/G4AL-Entertainment/g4al-chain/x/game/testutil"
+	"github.com/golang/mock/gomock"
 	"testing"
 
 	"github.com/G4AL-Entertainment/g4al-chain/x/game/keeper"
@@ -67,6 +69,19 @@ func GameKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		memStoreKey,
 		"GameParams",
 	)
+	ctrl := gomock.NewController(t)
+	accK := testUtil.NewMockAccountKeeper(ctrl)
+	permK := testUtil.NewMockPermissionKeeper(ctrl)
+
+	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, logger)
+
+	// Account expected
+	accK.EXPECT().GetAccount(ctx, gomock.Any()).AnyTimes()
+
+	// Permission expected
+	permK.EXPECT().ValidateDeveloper(ctx, gomock.Any()).AnyTimes()
+	permK.EXPECT().GetDeveloper(ctx, gomock.Any()).AnyTimes()
+
 	k := keeper.NewKeeper(
 		appCodec,
 		storeKey,
@@ -75,11 +90,9 @@ func GameKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		gameChannelKeeper{},
 		gamePortKeeper{},
 		capabilityKeeper.ScopeToModule("GameScopedKeeper"),
-		nil,
-		nil,
+		accK,
+		permK,
 	)
-
-	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, logger)
 
 	// Initialize params
 	k.SetParams(ctx, types.DefaultParams())
